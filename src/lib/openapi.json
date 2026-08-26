@@ -1,0 +1,874 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Zentra Reseller API",
+    "version": "1.0.0",
+    "summary": "Sell what Zentra Digital Shop sells, from your own bot or site.",
+    "description": "Buy digital products programmatically. Orders are paid from your Zentra wallet at shop prices and delivered instantly, the same way a purchase in the Telegram bot is.\n\n## Getting started\n\n1. Open [@ZentraShopBot](https://t.me/ZentraShopBot) in Telegram.\n2. Top up your wallet (Telebirr, Bank of Abyssinia, USDT or Binance Pay).\n3. Tap **API Link** → **Create API key**. The key is shown **once**.\n4. Send it on every request as `Authorization: Bearer zen_live_…`\n\n## Money\n\nEvery amount is a **string**, in USDT, and must be parsed with a decimal type. Parsing `\"0.90\"` as a float and adding it up is how two systems come to disagree about what was charged.\n\n## Retrying safely\n\n`POST /v1/orders` accepts an `X-Idempotency-Key` header. Send a unique value per intended order and a retry after a timeout returns the **original** order instead of placing a second one. Without it, a retry is a new order and a second charge.\n\n## Errors\n\nEvery failure returns `{\"error\": {\"code\", \"message\"}}`. Branch on `code`.",
+    "contact": {
+      "name": "Zentra Support",
+      "url": "https://t.me/ZentraShopBot"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.zentradigital.shop",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Account",
+      "description": "Who you are and what you can spend."
+    },
+    {
+      "name": "Catalogue",
+      "description": "What is for sale. No key required."
+    },
+    {
+      "name": "Orders",
+      "description": "Buying, and reading back what you bought."
+    }
+  ],
+  "paths": {
+    "/v1/me": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "operationId": "getMe",
+        "summary": "Your account and balance",
+        "description": "Confirms the key works and reports the wallet it spends from. Poll this before a large order rather than discovering a shortfall mid-batch.",
+        "responses": {
+          "200": {
+            "description": "Your account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user_id": {
+                      "type": "integer",
+                      "description": "Your Zentra account id."
+                    },
+                    "username": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Your Telegram username, if you have one."
+                    },
+                    "balance": {
+                      "type": "string",
+                      "description": "Spendable wallet balance in USDT. Decimal as a STRING, never a JSON number. JSON's only numeric type is a binary float, and a reseller reconciling totals against ours must get the same digits we charged.",
+                      "example": "42.50"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "description": "Always USDT.",
+                      "enum": [
+                        "USDT"
+                      ]
+                    },
+                    "api_key_prefix": {
+                      "type": "string",
+                      "description": "The visible part of the key in use — enough to tell which key this is, never enough to use it.",
+                      "example": "zen_live_A7f3C2d9"
+                    }
+                  },
+                  "required": [
+                    "user_id",
+                    "balance",
+                    "currency",
+                    "api_key_prefix"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a malformed key, or a key that is not live. code: unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The account is suspended. code: account_suspended",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests this minute. code: rate_limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The reseller API is closed. code: api_disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/products": {
+      "get": {
+        "tags": [
+          "Catalogue"
+        ],
+        "operationId": "listProducts",
+        "summary": "List every product",
+        "description": "Public — no key needed, so you can build a catalogue before signing up. Sold-out products ARE included, with `available: false`, so your own storefront can show them as out of stock rather than making them vanish.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "The catalogue.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "products": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Product"
+                      }
+                    }
+                  },
+                  "required": [
+                    "products"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/products/{product_id}": {
+      "get": {
+        "tags": [
+          "Catalogue"
+        ],
+        "operationId": "getProduct",
+        "summary": "One product",
+        "security": [],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Zentra's product id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such product, or it is not on sale. code: not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/orders": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "createOrder",
+        "summary": "Place an order",
+        "description": "Debits your wallet and fills the order immediately. On success the response already contains the delivered goods — there is nothing to poll for.\n\n**Always send `X-Idempotency-Key`.** A network timeout without one leaves you unable to tell whether you were charged.",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "description": "Your own unique id for this intended order. Retrying with the same value returns the original order rather than placing a second."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_id": {
+                    "type": "integer",
+                    "description": "From GET /v1/products.",
+                    "minimum": 1
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "description": "How many units.",
+                    "minimum": 1,
+                    "maximum": 1000,
+                    "default": 1
+                  }
+                },
+                "required": [
+                  "product_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ordered and delivered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "This idempotency key was already used — the ORIGINAL order, unchanged. You were not charged again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "The supplier call died in transit. Your wallet WAS debited and a human is reconciling it. Do NOT retry — check GET /v1/orders. code: unresolved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed body or out-of-range quantity. code: invalid_request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Your wallet cannot cover this, or the supplier refused it and you were refunded. code: order_failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Cannot be filled: out_of_stock, insufficient_stock, not_available, not_active — or in_progress if an identical idempotency key is still being placed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited, or this key's daily spend cap is reached. code: rate_limited | daily_cap_reached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a malformed key, or a key that is not live. code: unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The account is suspended. code: account_suspended",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The reseller API is closed. code: api_disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "listOrders",
+        "summary": "Your recent orders",
+        "description": "Newest first. `delivery` is omitted here — fetch a single order to read the goods.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Your orders.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "orders": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Order"
+                      }
+                    }
+                  },
+                  "required": [
+                    "orders"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a malformed key, or a key that is not live. code: unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The account is suspended. code: account_suspended",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests this minute. code: rate_limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The reseller API is closed. code: api_disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/orders/{order_id}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "getOrder",
+        "summary": "One order, with its delivery",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such order, or it is not yours. code: not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a malformed key, or a key that is not live. code: unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The account is suspended. code: account_suspended",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests this minute. code: rate_limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The reseller API is closed. code: api_disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/orders/{order_id}/export": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "exportOrder",
+        "summary": "The delivered goods as plain text",
+        "description": "One field per line, `label: value`. Convenient for piping straight into an importer.",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The goods.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Redeem link: https://example.com/redeem/abc\nCode: XXXX-YYYY"
+              }
+            }
+          },
+          "404": {
+            "description": "No such order, or it is not yours. code: not_found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Nothing to export yet. code: not_delivered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a malformed key, or a key that is not live. code: unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The account is suspended. code: account_suspended",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests this minute. code: rate_limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The reseller API is closed. code: api_disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health",
+        "summary": "Liveness",
+        "security": [],
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "Up.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "ok"
+                    },
+                    "service": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "version": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Your key from the Telegram bot: `Authorization: Bearer zen_live_…`. Keep it secret — anyone holding it can spend your wallet."
+      }
+    },
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Zentra's product id. Use this in POST /v1/orders — it is NOT the supplier's id.",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Product name.",
+            "example": "Gemini AI Pro 18m"
+          },
+          "description": {
+            "type": "string",
+            "description": "The supplier's own description, de-duplicated across their two text fields, or the shop's override where one is set."
+          },
+          "unit_label": {
+            "type": "string",
+            "description": "What one unit is called.",
+            "example": "code"
+          },
+          "price": {
+            "type": "string",
+            "description": "Price for ONE unit, in USDT. Decimal as a STRING, never a JSON number. JSON's only numeric type is a binary float, and a reseller reconciling totals against ours must get the same digits we charged.",
+            "example": "0.90"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Always USDT. Present so a client never has to assume.",
+            "enum": [
+              "USDT"
+            ]
+          },
+          "stock": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Units available, or null when the supplier does not count this product. null is NOT zero.",
+            "example": 1253
+          },
+          "available": {
+            "type": "boolean",
+            "description": "Whether this can be ordered right now. False when sold out or withdrawn — the product is still listed so you know it exists."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "unit_label",
+          "price",
+          "currency",
+          "stock",
+          "available"
+        ]
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Zentra's order id.",
+            "example": 1421
+          },
+          "reference": {
+            "type": "string",
+            "description": "Human-readable reference. Quote this to support.",
+            "example": "ZEN-A7F3C2D9"
+          },
+          "product_id": {
+            "type": "integer",
+            "description": "The product ordered."
+          },
+          "product_name": {
+            "type": "string",
+            "description": "Its name at the time of ordering."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Units ordered.",
+            "example": 2
+          },
+          "total": {
+            "type": "string",
+            "description": "What was charged to your wallet, in USDT. Decimal as a STRING, never a JSON number. JSON's only numeric type is a binary float, and a reseller reconciling totals against ours must get the same digits we charged.",
+            "example": "1.80"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Always USDT.",
+            "enum": [
+              "USDT"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "delivered is terminal and successful. refunded means the supplier failed and your wallet was put back. pending means it is still being filled.",
+            "enum": [
+              "pending",
+              "delivered",
+              "refunded",
+              "failed"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "description": "RFC 3339 timestamp.",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When it finished, or null."
+          },
+          "delivery": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "What this field is, when the supplier named it.",
+                  "example": "Redeem link"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "The value itself — a code, a link, a credential."
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            "description": "The goods. Present once status is delivered, null before that. Absent entirely from the list endpoint — fetch one order to read it."
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "product_id",
+          "quantity",
+          "total",
+          "currency",
+          "status",
+          "created_at"
+        ]
+      },
+      "DeliveryField": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "What this field is, when the supplier named it.",
+            "example": "Redeem link"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value itself — a code, a link, a credential."
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "A STABLE machine-readable code. Branch on this, never on `message` — the sentence may be reworded, the code will not."
+              },
+              "message": {
+                "type": "string",
+                "description": "A human-readable explanation, safe to log or show to your own support staff."
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    }
+  }
+}
