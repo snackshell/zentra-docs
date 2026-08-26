@@ -36,6 +36,19 @@ export const metadata: Metadata = {
     type: "website",
   },
   twitter: { card: "summary_large_image" },
+  // The favicon set lives in /public, generated from the shop's own logo.
+  // Declared explicitly rather than relying on the app-directory convention
+  // so the .ico, the PNG pair and the Apple touch icon are all named — a
+  // browser that only understands one of them still gets a mark.
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  manifest: "/site.webmanifest",
 };
 
 export const viewport: Viewport = {

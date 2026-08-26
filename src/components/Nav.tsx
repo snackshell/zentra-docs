@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, Send } from "lucide-react";
 
@@ -39,18 +40,30 @@ export function Nav() {
   );
 }
 
-/** The wordmark's Z, drawn rather than fetched — one less request and it
- *  inherits the gradient the rest of the identity uses. */
-export function Mark({ size = 26 }: { size?: number }) {
+/**
+ * The shop's actual logo — the same artwork the favicons are cut from.
+ *
+ * It was a drawn letter Z before, which was a stand-in until there was a
+ * real mark. There is one now, so the site wears it rather than an
+ * approximation of it.
+ *
+ * The artwork is circular with its own dark ground and its own neon ring,
+ * so it is NOT given a background, a border or a shadow here — those would
+ * be a second frame around something already framed. `aria-hidden` because
+ * the wordmark beside it already names the shop; a screen reader announcing
+ * "Zentra Zentra" is worse than one that says it once.
+ */
+export function Mark({ size = 30 }: { size?: number }) {
   return (
-    <span aria-hidden="true" style={{
-      width: size, height: size, borderRadius: 8, flexShrink: 0,
-      background: "var(--gradient)",
-      display: "grid", placeItems: "center",
-      color: "#fff", fontWeight: 700, fontSize: size * 0.55,
-      fontFamily: "var(--sans)", letterSpacing: "-.02em",
-      boxShadow: "0 4px 14px rgba(124,58,237,.4)",
-    }}>Z</span>
+    <Image
+      src="/android-chrome-192x192.png"
+      alt=""
+      aria-hidden="true"
+      width={size}
+      height={size}
+      priority
+      style={{ borderRadius: "50%", flexShrink: 0, display: "block" }}
+    />
   );
 }
 
