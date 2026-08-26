@@ -81,8 +81,8 @@ export function Footer() {
         </div>
         <div style={{ display: "flex", gap: 18, fontSize: 13.5 }} className="faint">
           <Link href="/api/docs">API Docs</Link>
-          <a href={BOT_URL} target="_blank" rel="noopener noreferrer">Telegram</a>
-          <a href="https://t.me/ZentraShopBot" target="_blank" rel="noopener noreferrer">Support</a>
+          <a href="https://t.me/ZentraDigitalShop" target="_blank" rel="noopener noreferrer">Telegram</a>
+          <a href="https://t.me/seneex" target="_blank" rel="noopener noreferrer">Support</a>
         </div>
       </div>
     </footer>
