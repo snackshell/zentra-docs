@@ -1,0 +1,221 @@
+/* Zentra's own identity — the same violet shading into magenta the Mini App
+ * carries, and the same three faces. This is the third surface wearing it,
+ * so it is copied deliberately rather than reinvented: a developer who has
+ * seen the shop should recognise the docs as the same company.
+ *
+ * DARK FIRST, unusually. A developer reads API documentation beside a
+ * terminal, and the terminal is dark. Light is fully supported and gets the
+ * same care — it is just not the shape this was designed around.
+ */
+
+:root {
+  color-scheme: dark light;
+
+  --ground: #0b0713;
+  --ground-2: #100a1c;
+  --surface: #16102232;
+  --surface-solid: #150e24;
+  --line: #271b3d;
+  --line-strong: #3b2a57;
+
+  --ink: #ece7f6;
+  --ink-soft: #b0a2c9;
+  --ink-faint: #7d6e99;
+
+  --accent: #a78bfa;
+  --accent-2: #e879f9;
+  --accent-ink: #d8c2ff;
+  --accent-soft: #1e1533;
+  --gradient: linear-gradient(135deg, #9061f9 0%, #e879f9 100%);
+
+  --good: #4ade80;
+  --good-soft: #10251a;
+  --warn: #fbbf24;
+  --warn-soft: #2a2210;
+  --bad: #f87171;
+  --bad-soft: #2c1519;
+
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 12px 40px rgba(88, 28, 135, .18);
+  --glow: 0 0 0 1px rgba(167, 139, 250, .22), 0 10px 40px rgba(167, 139, 250, .16);
+
+  --mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --display: var(--font-display), Georgia, serif;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --ground: #faf8fd;
+    --ground-2: #f3eefb;
+    --surface: #ffffff;
+    --surface-solid: #ffffff;
+    --line: #e7e0f3;
+    --line-strong: #d0c2e8;
+
+    --ink: #1d1330;
+    --ink-soft: #574868;
+    --ink-faint: #857496;
+
+    --accent: #7c3aed;
+    --accent-2: #c026d3;
+    --accent-ink: #5b21b6;
+    --accent-soft: #f4ecfe;
+    --gradient: linear-gradient(135deg, #7c3aed 0%, #c026d3 100%);
+
+    --good: #15803d;
+    --good-soft: #e8f7ee;
+    --warn: #a16207;
+    --warn-soft: #fdf5e2;
+    --bad: #be123c;
+    --bad-soft: #fdeaee;
+
+    --shadow: 0 1px 2px rgba(60, 20, 100, .05), 0 10px 34px rgba(60, 20, 100, .07);
+    --glow: 0 0 0 1px rgba(124, 58, 237, .18), 0 10px 34px rgba(124, 58, 237, .14);
+  }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15.5px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+code, pre { font-family: var(--mono); }
+
+/* ---- shared -------------------------------------------------------------- */
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+.grad {
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.eyebrow {
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.muted { color: var(--ink-soft); }
+.faint { color: var(--ink-faint); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--gradient);
+  color: #fff;
+  font: inherit;
+  font-weight: 560;
+  padding: 12px 20px;
+  cursor: pointer;
+  box-shadow: 0 6px 22px rgba(124, 58, 237, .34);
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(124, 58, 237, .42); }
+.btn:active { transform: translateY(0); }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: border-color .14s ease, background .14s ease;
+}
+.btn-ghost:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn-ghost { transition: none; }
+  .btn:hover { transform: none; }
+}
+
+/* ---- code ---------------------------------------------------------------- */
+
+pre.code {
+  margin: 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+  background: var(--ground-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.7;
+  tab-size: 2;
+}
+pre.code code { white-space: pre; }
+
+.tok-key { color: var(--accent-2); }
+.tok-str { color: var(--good); }
+.tok-num { color: var(--warn); }
+.tok-punc { color: var(--ink-faint); }
+.tok-cmt { color: var(--ink-faint); font-style: italic; }
+.tok-fn { color: var(--accent); }
+
+code.inline {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-radius: 5px;
+  padding: 1.5px 6px;
+  font-size: .89em;
+  word-break: break-word;
+}
+
+/* ---- method pills --------------------------------------------------------- */
+
+.verb {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  padding: 3px 8px;
+  border-radius: 5px;
+  text-transform: uppercase;
+}
+.verb-get { background: var(--accent-soft); color: var(--accent-ink); }
+.verb-post { background: var(--good-soft); color: var(--good); }
+
+.pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 11.5px;
+  font-weight: 560;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.pill-req { background: var(--bad-soft); color: var(--bad); }
+.pill-good { background: var(--good-soft); color: var(--good); }
+.pill-warn { background: var(--warn-soft); color: var(--warn); }
+
+/* ---- docs layout ----------------------------------------------------------- */
+
+.side-link:hover { background: var(--accent-soft); color: var(--accent-ink); }
+
+@media (max-width: 900px) {
+  .docs-side { display: none; }
+}
