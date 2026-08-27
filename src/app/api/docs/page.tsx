@@ -3,6 +3,7 @@ import { AlertTriangle, KeyRound, RefreshCw, Coins, Bug } from "lucide-react";
 import { Footer, Nav, BOT_URL } from "@/components/Nav";
 import { Code } from "@/components/Code";
 import { EndpointCard, SchemaCard } from "@/components/Reference";
+import { KeyBar } from "@/components/TryIt";
 import { BASE_URL, endpoints, spec } from "@/lib/openapi";
 
 export const metadata: Metadata = {
@@ -121,7 +122,17 @@ export default function Docs() {
           <p className="muted" style={{ maxWidth: 640 }}>
             Every authenticated request carries the key as a bearer token. Anyone
             holding it can spend your wallet, so keep it server-side — never in a
-            browser, a mobile app, or a public repository.
+            page you ship, a mobile app, or a public repository.
+          </p>
+          {/* The console below IS a browser, so the line above has to say what
+              makes that different rather than leave the reader to notice the
+              contradiction and trust neither statement. */}
+          <p className="muted" style={{ maxWidth: 640 }}>
+            The <b>Try it</b> boxes further down are the exception, and a narrow
+            one. Your key stays in this tab, is never sent anywhere but the API,
+            and the API only accepts <b>reads</b> from this site — placing an
+            order from a page here is refused by the server, not merely left out
+            of the interface.
           </p>
           <Code lang="bash">{`-H "Authorization: Bearer zen_live_YOUR_KEY"`}</Code>
 
@@ -201,6 +212,10 @@ export default function Docs() {
 
           {/* Endpoints */}
           <H id="endpoints">Endpoints</H>
+          {/* One key for the whole page, sitting above the endpoints it
+              unlocks. Retyping it per endpoint is how somebody ends up
+              pasting a live key into the wrong box. */}
+          <KeyBar />
           <div style={{ display: "grid", gap: 40 }}>
             {eps.map((ep) => <EndpointCard key={ep.op.operationId} ep={ep} />)}
           </div>
