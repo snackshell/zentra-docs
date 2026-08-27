@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { ChevronDown, Lock, Unlock } from "lucide-react";
 import { Code, CodeTabs } from "./Code";
+import { TryIt } from "./TryIt";
 import {
   BASE_URL, exampleFor, resolve, typeLabel,
   type Endpoint, type Schema,
@@ -114,6 +115,10 @@ export function EndpointCard({ ep }: { ep: Endpoint }) {
 
       <Block title="Request">
         <CodeTabs samples={samples(ep)} />
+      </Block>
+
+      <Block title="Try it">
+        <TryIt ep={ep} />
       </Block>
 
       {successSchema && (
