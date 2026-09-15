@@ -1,8 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpen, Send } from "lucide-react";
+import { BookOpen, Send, Terminal } from "lucide-react";
 
 export const BOT_URL = "https://t.me/ZentraShopBot";
+
+/** The open-source starter kit: a working bot built on the Reseller API. */
+export const REPO_URL = "https://github.com/zentradigitalshop/zentraapibot-example";
 
 export function Nav() {
   return (
@@ -24,10 +27,18 @@ export function Nav() {
           }}>Zentra</span>
         </Link>
 
+        {/* Three destinations is one more than the bar comfortably holds on a
+            phone, so below 620px the labels drop and the icons carry the
+            links. The Telegram button keeps its words — it is the one thing
+            a non-developer arriving here is looking for. */}
         <nav style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Link href="/example" className="btn-ghost" style={{ padding: "9px 14px", fontSize: 14 }}>
+            <Terminal size={15} strokeWidth={2} />
+            <span className="nav-label">Starter kit</span>
+          </Link>
           <Link href="/api/docs" className="btn-ghost" style={{ padding: "9px 14px", fontSize: 14 }}>
             <BookOpen size={15} strokeWidth={2} />
-            <span>API Docs</span>
+            <span className="nav-label">API Docs</span>
           </Link>
           <a href={BOT_URL} target="_blank" rel="noopener noreferrer"
              className="btn" style={{ padding: "9px 16px", fontSize: 14 }}>
@@ -79,7 +90,8 @@ export function Footer() {
           <Mark size={20} />
           <span>Zentra Digital Shop</span>
         </div>
-        <div style={{ display: "flex", gap: 18, fontSize: 13.5 }} className="faint">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 18, fontSize: 13.5 }} className="faint">
+          <Link href="/example">Starter kit</Link>
           <Link href="/api/docs">API Docs</Link>
           <a href="https://t.me/ZentraDigitalShop" target="_blank" rel="noopener noreferrer">Telegram</a>
           <a href="https://t.me/seneex" target="_blank" rel="noopener noreferrer">Support</a>

@@ -264,3 +264,12 @@ input::placeholder { color: var(--ink-faint); }
 @media (max-width: 900px) {
   .docs-side { display: none; }
 }
+
+/* ---- nav ------------------------------------------------------------------- */
+
+/* Three links plus a wordmark overflow a phone-width bar. The two ghost
+   links give up their words first; their icons still say which is which,
+   and the primary button keeps its label. */
+@media (max-width: 620px) {
+  .nav-label { display: none; }
+}

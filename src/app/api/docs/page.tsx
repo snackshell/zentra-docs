@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { AlertTriangle, KeyRound, RefreshCw, Coins, Bug } from "lucide-react";
-import { Footer, Nav, BOT_URL } from "@/components/Nav";
+import Link from "next/link";
+import { AlertTriangle, KeyRound, RefreshCw, Coins, Bug, Terminal } from "lucide-react";
+import { Footer, Nav, BOT_URL, REPO_URL } from "@/components/Nav";
 import { Code } from "@/components/Code";
 import { EndpointCard, SchemaCard } from "@/components/Reference";
 import { KeyBar } from "@/components/TryIt";
@@ -73,6 +74,7 @@ export default function Docs() {
             ["Retrying safely", "#idempotency"],
             ["Errors", "#errors"],
             ["Limits", "#limits"],
+            ["Starter kit", "#starter-kit"],
           ]} />
           {/* {product_id} and {order_id} are shortened to {id} here only —
               the full names stay on the endpoint itself. A sidebar label
@@ -111,6 +113,11 @@ export default function Docs() {
             <li>Send it on every request as a bearer token.</li>
           </ol>
           <Code lang="bash">{QUICKSTART}</Code>
+          <p className="muted" style={{ maxWidth: 640, marginTop: 14 }}>
+            Rather not write the client? <Link href="/example"
+              style={{ color: "var(--accent)" }}>The starter kit</Link> is a
+            working bot that already does all of this.
+          </p>
 
           {/* Auth */}
           <H id="auth">Authentication</H>
@@ -208,6 +215,33 @@ export default function Docs() {
                    note="Returns 429 daily_cap_reached. Ask support if you need it raised." />
             <Limit label="Quantity" value="1 to 1000 per order"
                    note="Stock is checked before anything is charged." />
+          </div>
+
+          {/* Starter kit — the reference implementation of everything above.
+              Placed after the guide and before the endpoint list, where a
+              reader has just learned the rules and is deciding whether to
+              write the client themselves. */}
+          <H id="starter-kit">Starter kit</H>
+          <p className="muted" style={{ maxWidth: 640 }}>
+            Everything on this page is already implemented in an open-source
+            Telegram bot you can clone: catalogue, wallet, orders, idempotent
+            retries, and four ways for your own customers to pay you. It ships
+            with an admin dashboard and a test suite, under the MIT licence.
+          </p>
+          <Note icon={<Terminal size={17} />}>
+            <code className="inline">bot/zentra_api.py</code> in that repository
+            is a complete, commented client for this API — the clearest answer
+            to &ldquo;what should my error handling actually look like&rdquo;
+            that this documentation can give you.
+          </Note>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 4 }}>
+            <Link href="/example" className="btn-ghost" style={{ padding: "10px 16px", fontSize: 14 }}>
+              What is in it
+            </Link>
+            <a href={REPO_URL} target="_blank" rel="noopener noreferrer"
+               className="btn-ghost" style={{ padding: "10px 16px", fontSize: 14 }}>
+              Source on GitHub
+            </a>
           </div>
 
           {/* Endpoints */}
