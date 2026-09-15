@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight, BookOpen, Bot, Code2, CreditCard, KeyRound,
-  LifeBuoy, Send, ShieldCheck, Wallet, Zap,
+  LifeBuoy, Send, ShieldCheck, Terminal, Wallet, Zap,
 } from "lucide-react";
 import { BOT_URL, Footer, Nav } from "@/components/Nav";
 import { Code } from "@/components/Code";
@@ -108,6 +108,30 @@ export default function Home() {
         <div style={{ marginTop: 28 }}>
           <Link href="/api/docs" className="btn">
             Full API reference <ArrowRight size={16} strokeWidth={2.2} />
+          </Link>
+        </div>
+      </section>
+
+      {/* ---- starter kit ---------------------------------------------
+          Deliberately NOT a card: it follows two grids of them, and a third
+          bordered box would read as one more item in a list rather than the
+          alternative route it actually is. */}
+      <section className="wrap" style={{ padding: "72px 24px 0" }}>
+        <div style={{ maxWidth: 640 }}>
+          <span className="eyebrow">Open source</span>
+          <h2 style={{
+            fontFamily: "var(--display)", fontWeight: 400, fontSize: 34,
+            margin: "10px 0 8px", letterSpacing: "-.015em", textWrap: "balance",
+          }}>Or skip the four steps entirely</h2>
+          <p className="muted" style={{ margin: "0 0 22px" }}>
+            The starter kit is a Telegram bot and admin dashboard that already
+            sell this catalogue — wallet, orders, four payment rails and the
+            tests to prove they work. Clone it, put your key in{" "}
+            <code className="inline">.env</code>, and the first thing you write
+            is your prices.
+          </p>
+          <Link href="/example" className="btn-ghost">
+            <Terminal size={17} strokeWidth={2} /> See the starter kit
           </Link>
         </div>
       </section>
